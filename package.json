@@ -1,0 +1,16 @@
+{
+  "name": "causalfunnel-user-analytics",
+  "version": "1.0.0",
+  "description": "Full-stack User Analytics Application with Client Tracking Script, Node.js/MongoDB Backend, and React Dashboard",
+  "main": "server/src/server.js",
+  "scripts": {
+    "start": "node server/src/server.js",
+    "server": "node server/src/server.js",
+    "dashboard": "npm run dev --prefix dashboard",
+    "dev": "npm run start:all",
+    "start:all": "node scripts/start-all.js"
+  },
+  "keywords": ["analytics", "tracking", "heatmap", "session-recording", "causalfunnel"],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraStore - Premium Audio | Analytics Demo Webpage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #06b6d4;
+      --bg: #0b0f19;
+      --surface: #131c31;
+      --surface-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2.5rem;
+      background: rgba(19, 28, 49, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--surface-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 1.35rem;
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 1.75rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--text);
+    }
+    .nav-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .btn {
+      padding: 0.65rem 1.4rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+    .btn-primary:hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-2px);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .hero {
+      text-align: center;
+      padding: 4rem 1rem 3rem;
+      position: relative;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, #c7d2fe, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      max-width: 680px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .section-subtitle {
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+    .product-img {
+      height: 200px;
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      user-select: none;
+    }
+    .product-info {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    .product-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #38bdf8;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .product-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .product-desc {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 1.25rem;
+      flex-grow: 1;
+    }
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+    .product-price {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .features-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+    @media (max-width: 768px) {
+      .features-section { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.4rem; }
+    }
+    .feature-box {
+      background: rgba(19, 28, 49, 0.6);
+      border: 1px solid var(--surface-border);
+      padding: 2rem;
+      border-radius: 14px;
+      text-align: center;
+    }
+    .feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+    }
+    .feature-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .feature-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .newsletter-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 3rem 2rem;
+      border-radius: 20px;
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .newsletter-card h2 {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+    .newsletter-form {
+      display: flex;
+      max-width: 480px;
+      margin: 1.5rem auto 0;
+      gap: 0.75rem;
+    }
+    .newsletter-input {
+      flex: 1;
+      padding: 0.8rem 1.2rem;
+      border-radius: 9999px;
+      background: #0b0f19;
+      border: 1px solid var(--surface-border);
+      color: white;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .newsletter-input:focus {
+      border-color: var(--primary);
+    }
+    /* Floating Debug Widget */
+    .tracking-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      z-index: 9999;
+      max-width: 320px;
+      font-size: 0.85rem;
+      backdrop-filter: blur(8px);
+    }
+    .tracking-widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .tracking-widget-badge {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
+    }
+    .tracking-info {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      word-break: break-all;
+      background: rgba(0,0,0,0.3);
+      padding: 0.4rem;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+    .tracking-widget-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .widget-btn {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background: #1e293b;
+      color: white;
+      cursor: pointer;
+    }
+    .widget-btn:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+        <polyline points="2 17 12 22 22 17"></polyline>
+        <polyline points="2 12 12 17 22 12"></polyline>
+      </svg>
+      AuraAudio
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active" id="nav-home">Home</a></li>
+      <li><a href="pricing.html" id="nav-pricing">Pricing</a></li>
+      <li><a href="#products" id="nav-headphones">Products</a></li>
+      <li><a href="#features" id="nav-features">Features</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn btn-secondary" id="btn-login">Sign In</button>
+      <button class="btn btn-primary" id="btn-cart">
+        Cart <span id="cart-counter">(0)</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Hero Section -->
+    <header class="hero">
+      <div class="badge" id="badge-version">
+        ✨ 2026 Next-Gen Spatial Audio
+      </div>
+      <h1>Experience Music Like <span>Never Before</span></h1>
+      <p>Precision-engineered studio monitors and wireless headphones delivering pristine acoustic immersion, lossless fidelity, and pure emotional depth.</p>
+      <div class="hero-buttons">
+        <button class="btn btn-primary" id="hero-btn-explore" style="font-size: 1.05rem; padding: 0.85rem 2rem;">
+          Explore Studio Pro
+        </button>
+        <button class="btn btn-secondary" id="hero-btn-demo" style="font-size: 1.05rem; padding: 0.85rem 2rem;">
+          Listen to Demo
+        </button>
+      </div>
+    </header>
+
+    <!-- Products Showcase -->
+    <section id="products">
+      <h2 class="section-title">Flagship Collection</h2>
+      <p class="section-subtitle">Crafted with beryllium drivers and active hybrid noise cancellation.</p>
+
+      <div class="products-grid">
+        <!-- Product 1 -->
+        <article class="product-card" id="card-product-1">
+          <div class="product-img">🎧</div>
+          <div class="product-info">
+            <span class="product-tag">Wireless ANC</span>
+            <h3 class="product-name">Aura Prime ANC</h3>
+            <p class="product-desc">Ultra-low distortion planar magnetic drivers with up to 45 hours battery life.</p>
+            <div class="product-footer">
+              <span class="product-price">$349</span>
+              <button class="btn btn-primary btn-add-cart" id="btn-add-aura-prime" data-product="Aura Prime ANC">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 2 -->
+        <article class="product-card" id="card-product-2">
+          <div class="product-img">🎵</div>
+          <div class="product-info">
+            <span class="product-tag">Audiophile Open-Back</span>
+            <h3 class="product-name">Aura Studio Reference</h3>
+            <p class="product-desc">Open-back acoustic architecture for hyper-realistic soundstaging and mastering.</p>
+            <div class="product-footer">
+              <span class="product-price">$599</span>
+              <button class="btn btn-primary btn-add-cart" id="btn-add-studio-ref" data-product="Aura Studio Reference">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 3 -->
+        <article class="product-card" id="card-product-3">
+          <div class="product-img">⚡</div>
+          <div class="product-info">
+            <span class="product-tag">True Wireless Earbuds</span>
+            <h3 class="product-name">Aura Air Pods Elite</h3>
+            <p class="product-desc">IPX7 water resistant, ceramic finish, and zero-latency Bluetooth 5.4 streaming.</p>
+            <div class="product-footer">
+              <span class="product-price">$199</span>
+              <button class="btn btn-primary btn-add-cart" id="btn-add-air-elite" data-product="Aura Air Pods Elite">Add to Cart</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+      <div class="feature-box" id="feature-1">
+        <div class="feature-icon">🛡️</div>
+        <h3 class="feature-title">3-Year Warranty</h3>
+        <p class="feature-desc">Comprehensive hardware protection and accidental damage coverage included.</p>
+      </div>
+      <div class="feature-box" id="feature-2">
+        <div class="feature-icon">🚀</div>
+        <h3 class="feature-title">Express Global Shipping</h3>
+        <p class="feature-desc">Carbon-neutral courier delivery within 48 hours to over 90 countries.</p>
+      </div>
+      <div class="feature-box" id="feature-3">
+        <div class="feature-icon">🔄</div>
+        <h3 class="feature-title">30-Day Risk-Free Trial</h3>
+        <p class="feature-desc">Test in your own home or studio. Return hassle-free if not completely thrilled.</p>
+      </div>
+    </section>
+
+    <!-- Newsletter CTA -->
+    <section class="newsletter-card" id="newsletter-section">
+      <h2>Join the Sound Revolution</h2>
+      <p>Subscribe for exclusive early-access drops, masterclasses, and acoustic firmware updates.</p>
+      <form class="newsletter-form" id="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed successfully!');">
+        <input type="email" class="newsletter-input" id="newsletter-email" placeholder="Enter your work or personal email..." required>
+        <button type="submit" class="btn btn-primary" id="btn-newsletter-subscribe">Subscribe</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- Floating Tracking Debug Panel -->
+  <div class="tracking-widget" id="tracking-debugger">
+    <div class="tracking-widget-header">
+      <div style="display:flex; align-items:center; gap:0.4rem;">
+        <span class="tracking-widget-badge"></span>
+        CausalTracker Active
+      </div>
+      <span id="click-counter-badge" style="color: #94a3b8; font-size:0.75rem;">Clicks: 0</span>
+    </div>
+    <div style="font-size:0.7rem; color:#94a3b8; margin-bottom:0.2rem;">Session ID:</div>
+    <div class="tracking-info" id="debug-session-id">Loading...</div>
+    <div class="tracking-widget-buttons">
+      <button class="widget-btn" id="btn-new-session" title="Generate a fresh session to test user journeys">New Session</button>
+      <a href="http://localhost:5173" target="_blank" class="widget-btn" style="text-decoration:none; display:inline-flex; align-items:center; background:#4f46e5;" id="btn-open-dashboard">Open Dashboard &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Interactive script for Demo clicks and tracker binding -->
+  <script>
+    let cartCount = 0;
+    let localClicks = 0;
+
+    // Cart button listener
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        cartCount++;
+        document.getElementById('cart-counter').textContent = `(${cartCount})`;
+      });
+    });
+
+    // Update debug panel
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (window.CausalTracker) {
+          const sid = window.CausalTracker.getSessionId();
+          document.getElementById('debug-session-id').textContent = sid || 'sess_active';
+        }
+      }, 200);
+    });
+
+    // Click counter for debug badge
+    document.addEventListener('click', (e) => {
+      localClicks++;
+      const counterEl = document.getElementById('click-counter-badge');
+      if (counterEl) counterEl.textContent = `Clicks: ${localClicks}`;
+    });
+
+    // Reset session button
+    document.getElementById('btn-new-session').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.CausalTracker) {
+        const newSid = window.CausalTracker.resetSession();
+        document.getElementById('debug-session-id').textContent = newSid;
+        alert('Created new session: ' + newSid + '\nNew interactions will belong to this session.');
+      }
+    });
+  </script>
+
+  <!-- Embed CausalFunnel Client Tracker -->
+  <script src="../tracker.js"></script>
+</body>
+</html>
