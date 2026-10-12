@@ -345,3 +345,20 @@ body {
   font-size: 0.78rem;
   backdrop-filter: blur(12px);
 }
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mobile Touch Optimization & Responsive Form Sizing */
+@media (max-width: 640px) {
+  .btn-ui {
+    min-height: 36px;
+  }
+}

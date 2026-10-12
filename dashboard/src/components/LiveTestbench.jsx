@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { PlayCircle, ExternalLink, RefreshCw, Smartphone, Monitor, Tablet, Info } from 'lucide-react';
+import { API_BASE } from '../api/config';
 
 export default function LiveTestbench({ onEventsUpdated }) {
-  const [activeUrl, setActiveUrl] = useState('http://localhost:5000/demo/index.html');
+  const [activeUrl, setActiveUrl] = useState(`${API_BASE}/demo/index.html`);
   const [deviceView, setDeviceView] = useState('desktop');
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -40,7 +41,7 @@ export default function LiveTestbench({ onEventsUpdated }) {
             {/* Page selection */}
             <div style={{ display: 'flex', background: 'rgba(15, 23, 42, 0.7)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <button
-                onClick={() => setActiveUrl('http://localhost:5000/demo/index.html')}
+                onClick={() => setActiveUrl(`${API_BASE}/demo/index.html`)}
                 className="btn-ui"
                 style={{
                   background: activeUrl.includes('index.html') ? 'var(--primary)' : 'transparent',
@@ -52,7 +53,7 @@ export default function LiveTestbench({ onEventsUpdated }) {
                 Storefront (Home)
               </button>
               <button
-                onClick={() => setActiveUrl('http://localhost:5000/demo/pricing.html')}
+                onClick={() => setActiveUrl(`${API_BASE}/demo/pricing.html`)}
                 className="btn-ui"
                 style={{
                   background: activeUrl.includes('pricing.html') ? 'var(--primary)' : 'transparent',

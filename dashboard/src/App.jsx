@@ -5,11 +5,13 @@ import SessionsView from './components/SessionsView';
 import HeatmapView from './components/HeatmapView';
 import LiveTestbench from './components/LiveTestbench';
 import SessionJourneyModal from './components/SessionJourneyModal';
+import { API_BASE, getApiUrl } from './api/config';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('sessions');
   const [sessions, setSessions] = useState([]);
   const [pages, setPages] = useState([]);
+  const [storageInfo, setStorageInfo] = useState({ storageMode: 'in-memory-fallback', isPersistent: false });
   const [selectedSession, setSelectedSession] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -24,16 +26,23 @@ export default function App() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [sessionsRes, pagesRes] = await Promise.all([
-        fetch('http://localhost:5000/api/sessions').then(r => r.json()),
-        fetch('http://localhost:5000/api/events/pages').then(r => r.json())
+      const [sessionsRes, pagesRes, healthRes] = await Promise.all([
+        fetch(getApiUrl('/api/sessions')).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(getApiUrl('/api/events/pages')).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(getApiUrl('/api/health')).then(r => r.json()).catch(() => ({ status: 'error' }))
       ]);
 
-      if (sessionsRes.success && sessionsRes.sessions) {
+      if (sessionsRes && sessionsRes.success && sessionsRes.sessions) {
         setSessions(sessionsRes.sessions);
       }
-      if (pagesRes.success && pagesRes.pages) {
+      if (pagesRes && pagesRes.success && pagesRes.pages) {
         setPages(pagesRes.pages);
+      }
+      if (healthRes && healthRes.status === 'ok') {
+        setStorageInfo({
+          storageMode: healthRes.storageMode || 'in-memory-fallback',
+          isPersistent: Boolean(healthRes.isPersistent)
+        });
       }
     } catch (err) {
       console.error('Error fetching analytics data from server:', err);
@@ -58,7 +67,7 @@ export default function App() {
   // Seed sample data handler
   const handleSeedData = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/events/seed', { method: 'POST' }).then(r => r.json());
+      const res = await fetch(getApiUrl('/api/events/seed'), { method: 'POST' }).then(r => r.json());
       if (res.success) {
         await fetchData();
         showToast('Sample session events seeded successfully!');
@@ -72,7 +81,7 @@ export default function App() {
   const handleClearData = async () => {
     if (!window.confirm('Are you sure you want to clear all analytics records?')) return;
     try {
-      await fetch('http://localhost:5000/api/events/clear', { method: 'POST' });
+      await fetch(getApiUrl('/api/events/clear'), { method: 'POST' });
       await fetchData();
       showToast('All analytics records cleared.');
     } catch (err) {
@@ -82,8 +91,8 @@ export default function App() {
 
   // Simulate realistic traffic session
   const handleSimulateTraffic = async () => {
-    const demoUrl = 'http://localhost:5000/demo/index.html';
-    const pricingUrl = 'http://localhost:5000/demo/pricing.html';
+    const demoUrl = `${API_BASE}/demo/index.html`;
+    const pricingUrl = `${API_BASE}/demo/pricing.html`;
     const sid = 'sess_live_sim_' + Math.random().toString(36).substring(2, 7);
     const now = Date.now();
 
@@ -150,7 +159,7 @@ export default function App() {
     ];
 
     try {
-      await fetch('http://localhost:5000/api/events', {
+      await fetch(getApiUrl('/api/events'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(simEvents)
@@ -200,6 +209,7 @@ export default function App() {
       <Navbar 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        storageInfo={storageInfo}
         onRefresh={fetchData}
         isLoading={isLoading}
         autoRefresh={autoRefresh}

@@ -17,9 +17,20 @@
   }
   window.__CAUSAL_TRACKER_INITIALIZED__ = true;
 
+  // Dynamically resolve default API endpoint if not explicitly provided
+  function resolveDefaultEndpoint() {
+    if (typeof window !== 'undefined' && window.CAUSAL_TRACKER_ENDPOINT) {
+      return window.CAUSAL_TRACKER_ENDPOINT;
+    }
+    if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:')) {
+      return window.location.origin + '/api/events';
+    }
+    return 'http://localhost:5000/api/events';
+  }
+
   const CONFIG = {
     // Default API endpoint; can be overridden via window.CAUSAL_TRACKER_ENDPOINT or init()
-    apiEndpoint: window.CAUSAL_TRACKER_ENDPOINT || 'http://localhost:5000/api/events',
+    apiEndpoint: resolveDefaultEndpoint(),
     cookieName: 'cf_session_id',
     storageKey: 'cf_session_id',
     sessionTimeoutMinutes: 30,

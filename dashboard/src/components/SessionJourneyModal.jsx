@@ -17,6 +17,7 @@ import {
   Navigation,
   Sparkles
 } from 'lucide-react';
+import { getApiUrl } from '../api/config';
 
 export default function SessionJourneyModal({ session, onClose }) {
   const [events, setEvents] = useState([]);
@@ -28,7 +29,7 @@ export default function SessionJourneyModal({ session, onClose }) {
     if (!session) return;
     setLoading(true);
 
-    fetch(`http://localhost:5000/api/sessions/${session.sessionId}`)
+    fetch(getApiUrl(`/api/sessions/${session.sessionId}`))
       .then(res => res.json())
       .then(data => {
         if (data.success && data.events) {
@@ -40,6 +41,7 @@ export default function SessionJourneyModal({ session, onClose }) {
       })
       .catch(err => {
         console.error('Failed to load session events:', err);
+        setEvents([]);
         setLoading(false);
       });
   }, [session]);
@@ -95,10 +97,11 @@ export default function SessionJourneyModal({ session, onClose }) {
 
   return (
     <div 
+      className="modal-backdrop"
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(2, 6, 23, 0.8)',
+        backgroundColor: 'rgba(2, 6, 23, 0.85)',
         backdropFilter: 'blur(10px)',
         zIndex: 999,
         display: 'flex',
@@ -109,7 +112,7 @@ export default function SessionJourneyModal({ session, onClose }) {
       onClick={onClose}
     >
       <div 
-        className="glass-panel"
+        className="glass-panel modal-card"
         style={{
           width: '100%',
           maxWidth: '860px',
@@ -125,16 +128,19 @@ export default function SessionJourneyModal({ session, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div style={{
-          padding: '1.25rem 1.75rem',
-          borderBottom: '1px solid var(--border-subtle)',
-          background: 'rgba(15, 23, 42, 0.7)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
-        }}>
+        <div 
+          className="modal-header-container"
+          style={{
+            padding: '1.25rem 1.75rem',
+            borderBottom: '1px solid var(--border-subtle)',
+            background: 'rgba(15, 23, 42, 0.7)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.75rem'
+          }}
+        >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.2rem' }}>
               <span className="badge-pill badge-indigo">
@@ -420,6 +426,21 @@ export default function SessionJourneyModal({ session, onClose }) {
           )}
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .modal-backdrop {
+            padding: 0.5rem !important;
+          }
+          .modal-card {
+            max-height: 96vh !important;
+            border-radius: 14px !important;
+          }
+          .modal-header-container {
+            padding: 1rem 1.15rem !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

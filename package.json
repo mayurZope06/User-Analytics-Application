@@ -8,7 +8,9 @@
     "server": "node server/src/server.js",
     "dashboard": "npm run dev --prefix dashboard",
     "dev": "npm run start:all",
-    "start:all": "node scripts/start-all.js"
+    "start:all": "node scripts/start-all.js",
+    "test": "npm test --prefix server",
+    "build": "npm run build --prefix dashboard"
   },
   "keywords": ["analytics", "tracking", "heatmap", "session-recording", "causalfunnel"],
   "author": "",

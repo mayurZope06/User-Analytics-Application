@@ -5,9 +5,13 @@ const { isMongoConnected } = require('../config/db');
 let memoryEvents = [];
 
 /**
- * Standardize incoming event object to match Schema fields
+ * Standardize incoming event object to match Schema fields with strict validation
  */
 function normalizeEventData(raw, req = {}) {
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Event payload must be a valid JSON object.');
+  }
+
   const sessionId = raw.session_id || raw.sessionId;
   const eventType = raw.event_type || raw.eventType;
   const pageUrl = raw.page_url || raw.pageUrl || raw.url;
@@ -16,21 +20,51 @@ function normalizeEventData(raw, req = {}) {
     throw new Error('Missing required fields: session_id, event_type, page_url are mandatory.');
   }
 
-  const timestamp = raw.timestamp ? new Date(raw.timestamp) : new Date();
+  const normalizedEventType = String(eventType).trim().toLowerCase();
+  const allowedEventTypes = ['page_view', 'click', 'custom'];
+  if (!allowedEventTypes.includes(normalizedEventType)) {
+    throw new Error(`Invalid event_type: '${eventType}'. Allowed types are: ${allowedEventTypes.join(', ')}`);
+  }
+
+  // Validate coordinates for click events
+  let x = null;
+  let y = null;
+  if (normalizedEventType === 'click') {
+    const rawX = raw.x !== undefined && raw.x !== null ? raw.x : raw.client_x !== undefined ? raw.client_x : raw.clientX;
+    const rawY = raw.y !== undefined && raw.y !== null ? raw.y : raw.client_y !== undefined ? raw.client_y : raw.clientY;
+
+    if (rawX === undefined || rawX === null || rawY === undefined || rawY === null || isNaN(Number(rawX)) || isNaN(Number(rawY))) {
+      throw new Error('Click events must include valid numeric x and y coordinates.');
+    }
+    x = Number(rawX);
+    y = Number(rawY);
+  } else {
+    x = raw.x !== undefined && raw.x !== null ? Number(raw.x) : null;
+    y = raw.y !== undefined && raw.y !== null ? Number(raw.y) : null;
+  }
+
+  let timestamp = new Date();
+  if (raw.timestamp) {
+    const parsedDate = new Date(raw.timestamp);
+    if (isNaN(parsedDate.getTime())) {
+      throw new Error('Invalid timestamp format. Must be a valid date.');
+    }
+    timestamp = parsedDate;
+  }
 
   return {
     sessionId: String(sessionId).trim(),
-    eventType: String(eventType).trim().toLowerCase(),
+    eventType: normalizedEventType,
     pageUrl: String(pageUrl).trim(),
     pagePath: raw.page_path || raw.pagePath || '',
     pageTitle: raw.page_title || raw.pageTitle || '',
     timestamp,
 
     // Clicks
-    x: raw.x !== undefined ? Number(raw.x) : null,
-    y: raw.y !== undefined ? Number(raw.y) : null,
-    clientX: raw.client_x !== undefined ? Number(raw.client_x) : (raw.clientX !== undefined ? Number(raw.clientX) : null),
-    clientY: raw.client_y !== undefined ? Number(raw.client_y) : (raw.clientY !== undefined ? Number(raw.clientY) : null),
+    x,
+    y,
+    clientX: raw.client_x !== undefined ? Number(raw.client_x) : (raw.clientX !== undefined ? Number(raw.clientX) : x),
+    clientY: raw.client_y !== undefined ? Number(raw.client_y) : (raw.clientY !== undefined ? Number(raw.clientY) : y),
     xPct: raw.x_pct !== undefined ? Number(raw.x_pct) : (raw.xPct !== undefined ? Number(raw.xPct) : null),
     yPct: raw.y_pct !== undefined ? Number(raw.y_pct) : (raw.yPct !== undefined ? Number(raw.yPct) : null),
     viewportWidth: raw.viewport_width !== undefined ? Number(raw.viewport_width) : (raw.viewportWidth !== undefined ? Number(raw.viewportWidth) : null),
@@ -46,7 +80,7 @@ function normalizeEventData(raw, req = {}) {
     referrer: raw.referrer || '',
     userAgent: raw.user_agent || (req.headers && req.headers['user-agent']) || '',
     ip: req.ip || (req.connection && req.connection.remoteAddress) || '',
-    properties: raw.properties || {}
+    properties: { ...(raw.properties || {}), ...(raw.is_seed ? { isSeed: true } : {}) }
   };
 }
 
@@ -419,7 +453,17 @@ async function seedSampleData() {
     }
   ];
 
-  await recordEvents(sampleEvents);
+  // Prevent duplicate seed sessions if re-seeding
+  const seedSessionIds = ['sess_user_alpha_741', 'sess_user_beta_982', 'sess_user_gamma_312'];
+  if (isMongoConnected()) {
+    try {
+      await Event.deleteMany({ sessionId: { $in: seedSessionIds } });
+    } catch (e) {}
+  }
+  memoryEvents = memoryEvents.filter(ev => !seedSessionIds.includes(ev.sessionId));
+
+  const markedEvents = sampleEvents.map(e => ({ ...e, is_seed: true }));
+  await recordEvents(markedEvents);
   return { seeded: sampleEvents.length };
 }
 
@@ -434,6 +478,15 @@ async function clearAllEvents() {
   return { success: true };
 }
 
+function getStorageStatus() {
+  return {
+    isMongo: isMongoConnected(),
+    storageMode: isMongoConnected() ? 'mongodb' : 'in-memory-fallback',
+    isPersistent: isMongoConnected(),
+    inMemoryCount: memoryEvents.length
+  };
+}
+
 module.exports = {
   recordEvents,
   getSessionsList,
@@ -441,5 +494,6 @@ module.exports = {
   getPageClicks,
   getTrackedPages,
   seedSampleData,
-  clearAllEvents
+  clearAllEvents,
+  getStorageStatus
 };

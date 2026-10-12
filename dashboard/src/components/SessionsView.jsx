@@ -14,6 +14,7 @@ import {
   Laptop,
   Timer
 } from 'lucide-react';
+import { API_BASE } from '../api/config';
 
 export default function SessionsView({ sessions = [], onSelectSession, onSeedData }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -211,7 +212,7 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
               Seed Demo Data
             </button>
             <a 
-              href="http://localhost:5000/demo/index.html" 
+              href={`${API_BASE}/demo/index.html`} 
               target="_blank" 
               rel="noreferrer" 
               className="btn-ui btn-ui-secondary"
@@ -222,152 +223,238 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
           </div>
         </div>
       ) : (
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <div className="table-responsive">
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
-              <thead>
-                <tr style={{
-                  borderBottom: '1px solid var(--border-subtle)',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  color: 'var(--text-secondary)',
-                  fontSize: '0.75rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}>
-                  <th style={{ padding: '0.9rem 1.25rem' }}>Session Identifier</th>
-                  <th style={{ padding: '0.9rem 1rem' }}>Total Events</th>
-                  <th style={{ padding: '0.9rem 1rem' }}>Activity Breakdown</th>
-                  <th style={{ padding: '0.9rem 1rem' }}>Pages Visited</th>
-                  <th style={{ padding: '0.9rem 1rem' }}>Session Duration</th>
-                  <th style={{ padding: '0.9rem 1rem' }}>Last Active</th>
-                  <th style={{ padding: '0.9rem 1.25rem', textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSessions.map((session, idx) => (
-                  <tr 
-                    key={session.sessionId}
-                    onClick={() => onSelectSession(session)}
-                    style={{
-                      borderBottom: '1px solid var(--border-subtle)',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.06)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    {/* Session ID */}
-                    <td style={{ padding: '0.95rem 1.25rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                        <div style={{
-                          width: '28px',
-                          height: '28px',
-                          borderRadius: '8px',
-                          background: `hsl(${(idx * 65 + 200) % 360}, 70%, 25%)`,
-                          border: `1px solid hsl(${(idx * 65 + 200) % 360}, 70%, 45%)`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          color: '#ffffff',
-                          flexShrink: 0
-                        }}>
-                          {session.sessionId.charAt(5)?.toUpperCase() || 'U'}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                          <span style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '0.82rem',
-                            color: '#e2e8f0',
-                            fontWeight: 600
-                          }}>
-                            {session.sessionId}
-                          </span>
-                          <button 
-                            onClick={(e) => copyToClipboard(session.sessionId, e)}
-                            title="Copy Session ID"
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: copiedId === session.sessionId ? '#22c55e' : 'var(--text-muted)',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              padding: '2px',
-                              borderRadius: '4px'
-                            }}
-                          >
-                            {copiedId === session.sessionId ? <Check size={13} /> : <Copy size={13} />}
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Total Events */}
-                    <td style={{ padding: '0.95rem 1rem' }}>
-                      <span className="badge-pill badge-indigo">
-                        {session.totalEvents} events
-                      </span>
-                    </td>
-
-                    {/* Breakdown */}
-                    <td style={{ padding: '0.95rem 1rem' }}>
-                      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.78rem' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#93c5fd' }}>
-                          <Eye size={12} /> {session.pageViews || 0} views
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#6ee7b7' }}>
-                          <MousePointer size={12} /> {session.clicks || 0} clicks
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Page Count */}
-                    <td style={{ padding: '0.95rem 1rem', color: 'var(--text-secondary)' }}>
-                      <span className="badge-pill badge-cyan" style={{ fontSize: '0.72rem' }}>
-                        {session.pageCount || 1} URL{session.pageCount > 1 ? 's' : ''}
-                      </span>
-                    </td>
-
-                    {/* Duration */}
-                    <td style={{ padding: '0.95rem 1rem', color: 'var(--text-secondary)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem' }}>
-                        <Timer size={13} color="var(--text-muted)" />
-                        <span>{formatDuration(session.durationSeconds)}</span>
-                      </div>
-                    </td>
-
-                    {/* Last Active */}
-                    <td style={{ padding: '0.95rem 1rem' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
-                        {formatRelative(session.lastSeen)}
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                        {formatTime(session.lastSeen)}
-                      </div>
-                    </td>
-
-                    {/* Action */}
-                    <td style={{ padding: '0.95rem 1.25rem', textAlign: 'right' }}>
-                      <button 
-                        className="btn-ui btn-ui-secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectSession(session);
-                        }}
-                        style={{ padding: '0.35rem 0.8rem', fontSize: '0.78rem' }}
-                      >
-                        <span>User Journey</span>
-                        <ChevronRight size={13} />
-                      </button>
-                    </td>
+        <>
+          {/* Desktop & Tablet Table View */}
+          <div className="glass-panel sessions-table-wrapper" style={{ overflow: 'hidden' }}>
+            <div className="table-responsive">
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
+                <thead>
+                  <tr style={{
+                    borderBottom: '1px solid var(--border-subtle)',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    <th style={{ padding: '0.9rem 1.25rem' }}>Session Identifier</th>
+                    <th style={{ padding: '0.9rem 1rem' }}>Total Events</th>
+                    <th style={{ padding: '0.9rem 1rem' }}>Activity Breakdown</th>
+                    <th style={{ padding: '0.9rem 1rem' }}>Pages Visited</th>
+                    <th style={{ padding: '0.9rem 1rem' }}>Session Duration</th>
+                    <th style={{ padding: '0.9rem 1rem' }}>Last Active</th>
+                    <th style={{ padding: '0.9rem 1.25rem', textAlign: 'right' }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredSessions.map((session, idx) => (
+                    <tr 
+                      key={session.sessionId}
+                      onClick={() => onSelectSession(session)}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        cursor: 'pointer',
+                        transition: 'background 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.06)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      {/* Session ID */}
+                      <td style={{ padding: '0.95rem 1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '8px',
+                            background: `hsl(${(idx * 65 + 200) % 360}, 70%, 25%)`,
+                            border: `1px solid hsl(${(idx * 65 + 200) % 360}, 70%, 45%)`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            color: '#ffffff',
+                            flexShrink: 0
+                          }}>
+                            {session.sessionId.charAt(5)?.toUpperCase() || 'U'}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                            <span style={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '0.82rem',
+                              color: '#e2e8f0',
+                              fontWeight: 600
+                            }}>
+                              {session.sessionId}
+                            </span>
+                            <button 
+                              onClick={(e) => copyToClipboard(session.sessionId, e)}
+                              title="Copy Session ID"
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: copiedId === session.sessionId ? '#22c55e' : 'var(--text-muted)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                padding: '2px',
+                                borderRadius: '4px'
+                              }}
+                            >
+                              {copiedId === session.sessionId ? <Check size={13} /> : <Copy size={13} />}
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Total Events */}
+                      <td style={{ padding: '0.95rem 1rem' }}>
+                        <span className="badge-pill badge-indigo">
+                          {session.totalEvents} events
+                        </span>
+                      </td>
+
+                      {/* Breakdown */}
+                      <td style={{ padding: '0.95rem 1rem' }}>
+                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', fontSize: '0.78rem' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#93c5fd' }}>
+                            <Eye size={12} /> {session.pageViews || 0} views
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#6ee7b7' }}>
+                            <MousePointer size={12} /> {session.clicks || 0} clicks
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Page Count */}
+                      <td style={{ padding: '0.95rem 1rem', color: 'var(--text-secondary)' }}>
+                        <span className="badge-pill badge-cyan" style={{ fontSize: '0.72rem' }}>
+                          {session.pageCount || 1} URL{session.pageCount > 1 ? 's' : ''}
+                        </span>
+                      </td>
+
+                      {/* Duration */}
+                      <td style={{ padding: '0.95rem 1rem', color: 'var(--text-secondary)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem' }}>
+                          <Timer size={13} color="var(--text-muted)" />
+                          <span>{formatDuration(session.durationSeconds)}</span>
+                        </div>
+                      </td>
+
+                      {/* Last Active */}
+                      <td style={{ padding: '0.95rem 1rem' }}>
+                        <div style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>
+                          {formatRelative(session.lastSeen)}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          {formatTime(session.lastSeen)}
+                        </div>
+                      </td>
+
+                      {/* Action */}
+                      <td style={{ padding: '0.95rem 1.25rem', textAlign: 'right' }}>
+                        <button 
+                          className="btn-ui btn-ui-secondary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectSession(session);
+                          }}
+                          style={{ padding: '0.35rem 0.8rem', fontSize: '0.78rem' }}
+                        >
+                          <span>User Journey</span>
+                          <ChevronRight size={13} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Optimized Cards View (Screens <= 768px) */}
+          <div className="sessions-cards-mobile" style={{ display: 'none', flexDirection: 'column', gap: '0.85rem' }}>
+            {filteredSessions.map((session, idx) => (
+              <div
+                key={session.sessionId}
+                className="glass-panel"
+                onClick={() => onSelectSession(session)}
+                style={{
+                  padding: '1.1rem 1.25rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem',
+                  cursor: 'pointer',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '14px'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '6px',
+                      background: `hsl(${(idx * 65 + 200) % 360}, 70%, 25%)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      color: '#ffffff'
+                    }}>
+                      {session.sessionId.charAt(5)?.toUpperCase() || 'U'}
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: '#e2e8f0', fontWeight: 600 }}>
+                      {session.sessionId.length > 20 ? session.sessionId.substring(0, 18) + '...' : session.sessionId}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={(e) => copyToClipboard(session.sessionId, e)}
+                    style={{ background: 'transparent', border: 'none', color: copiedId === session.sessionId ? '#22c55e' : 'var(--text-muted)' }}
+                  >
+                    {copiedId === session.sessionId ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span className="badge-pill badge-indigo">
+                    {session.totalEvents} total events
+                  </span>
+                  <span className="badge-pill badge-emerald">
+                    <MousePointer size={11} /> {session.clicks || 0} clicks
+                  </span>
+                  <span className="badge-pill badge-cyan">
+                    <Eye size={11} /> {session.pageViews || 0} views
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.5rem' }}>
+                  <span>Active: {formatRelative(session.lastSeen)} &bull; {formatDuration(session.durationSeconds)}</span>
+                  <span style={{ color: 'var(--primary-light)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    View Journey &rarr;
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .sessions-table-wrapper {
+            display: none !important;
+          }
+          .sessions-cards-mobile {
+            display: flex !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .sessions-cards-mobile {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

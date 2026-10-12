@@ -10,6 +10,14 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true
+      },
+      '/demo': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      },
+      '/tracker.js': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
       }
     }
   }

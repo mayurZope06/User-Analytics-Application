@@ -15,8 +15,10 @@ const serverProcess = spawn('node', ['server/src/server.js'], {
   cwd: path.resolve(__dirname, '..')
 });
 
+const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 // 2. Start Dashboard
-const dashboardProcess = spawn('npm', ['run', 'dev'], {
+const dashboardProcess = spawn(npmCmd, ['run', 'dev'], {
   stdio: 'inherit',
   shell: true,
   cwd: path.resolve(__dirname, '../dashboard')

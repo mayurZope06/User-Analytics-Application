@@ -15,6 +15,7 @@ import {
   Info,
   Maximize2
 } from 'lucide-react';
+import { API_BASE, getApiUrl } from '../api/config';
 
 export default function HeatmapView({ pages = [], sessions = [] }) {
   const [selectedUrl, setSelectedUrl] = useState('');
@@ -34,7 +35,7 @@ export default function HeatmapView({ pages = [], sessions = [] }) {
     if (pages.length > 0 && !selectedUrl) {
       setSelectedUrl(pages[0].pageUrl);
     } else if (!selectedUrl) {
-      setSelectedUrl('http://localhost:5000/demo/index.html');
+      setSelectedUrl(`${API_BASE}/demo/index.html`);
     }
   }, [pages]);
 
@@ -47,7 +48,7 @@ export default function HeatmapView({ pages = [], sessions = [] }) {
       query.append('sessionId', sessionFilter);
     }
 
-    fetch(`http://localhost:5000/api/events/clicks?${query.toString()}`)
+    fetch(getApiUrl(`/api/events/clicks?${query.toString()}`))
       .then(res => res.json())
       .then(data => {
         if (data.success && data.clicks) {
@@ -59,6 +60,7 @@ export default function HeatmapView({ pages = [], sessions = [] }) {
       })
       .catch(err => {
         console.error('Failed to load click data:', err);
+        setClicks([]);
         setLoading(false);
       });
   }, [selectedUrl, sessionFilter]);
@@ -432,7 +434,7 @@ export default function HeatmapView({ pages = [], sessions = [] }) {
       {/* Heatmap Canvas Container */}
       <div 
         ref={containerRef}
-        className="glass-panel" 
+        className="glass-panel heatmap-canvas-container" 
         style={{
           position: 'relative',
           borderRadius: '16px',
@@ -592,6 +594,14 @@ export default function HeatmapView({ pages = [], sessions = [] }) {
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .heatmap-canvas-container {
+            min-height: 480px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
