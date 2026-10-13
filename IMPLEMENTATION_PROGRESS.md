@@ -153,3 +153,29 @@ dist/assets/index-DXCgWD1E.js   213.27 kB │ gzip: 62.34 kB
 
 ### Laptop / Desktop Viewport (1025px – 1440px+)
 - [x] **Full Grid Layout**: 4-column KPI cards, comprehensive sessions table with sort/search, interactive dual-pane controls, and full 1200x850 canvas visualization with iframe backdrop preview.
+
+---
+
+## 6. Advanced Add-on Features & Interview-Winning Enhancements
+
+### 1. E-Commerce Conversion Funnel & Drop-off Analysis (`FunnelView.jsx`)
+- **Route**: `GET /api/events/funnel`
+- **4-Stage Waterfall Breakdown**:
+  1. *Storefront Discovery*: Catalog entrants on `/demo/index.html`.
+  2. *Product Engagement*: Visitors clicking product CTAs (`#hero-btn-explore`, `#btn-add-aura-prime`).
+  3. *Pricing Consideration*: Visitors comparing subscription tiers on `/demo/pricing.html`.
+  4. *Trial / Checkout Intent*: High-commitment action clicking `#btn-select-pro`.
+- **Metrics Calculated**: End-to-end conversion rate, stage transition percentages, step drop-off rates, and automated identification of the primary drop-off bottleneck stage.
+- **Actionable AI CRO Heuristics**: Dynamic strategic recommendations tailored to e-commerce conversion optimization.
+
+### 2. Interactive Virtual Session Replay Player (`SessionJourneyModal.jsx`)
+- **Virtual Browser Shell**: Interactive simulated browser mockup with address bar, lock indicator, and real-time step counter.
+- **Smooth Cursor Simulation**: Virtual cursor glides dynamically between interaction coordinates with glowing visual trails.
+- **Animated Click Ripples**: Expanding concentric radar rings pulsing on the exact pixel/percentage coordinates of click events.
+- **Full Player Transport**: Play/Pause toggle, 0.5x / 1x / 2x / 4x speed multipliers, step forward / step backward, restart button, and interactive scrubber slider.
+
+### 3. Rage Click & Frustration Heuristics (`detectSessionHeuristics`)
+- **Frustration Detection**: Evaluates temporal click frequency to catch $\ge 3$ rapid clicks within $\le 1500\text{ms}$ on the same or adjacent elements.
+- **Intent Tier Classification**: Categorizes user intent into `High Intent`, `Engaged`, `Casual Explorer`, or `Bounced`.
+- **Visual Callouts**: Bold warning badges (`⚠️ Rage Click`) and filter tabs on the Sessions directory, enabling immediate triage of struggling customers.
+
