@@ -4,6 +4,7 @@ import StatsOverview from './components/StatsOverview';
 import SessionsView from './components/SessionsView';
 import HeatmapView from './components/HeatmapView';
 import LiveTestbench from './components/LiveTestbench';
+import FunnelView from './components/FunnelView';
 import SessionJourneyModal from './components/SessionJourneyModal';
 import { API_BASE, getApiUrl } from './api/config';
 
@@ -231,6 +232,12 @@ export default function App() {
             sessions={sessions}
             onSelectSession={(s) => setSelectedSession(s)}
             onSeedData={handleSeedData}
+          />
+        )}
+
+        {activeTab === 'funnel' && (
+          <FunnelView 
+            onSimulateTraffic={handleSimulateTraffic}
           />
         )}
 
