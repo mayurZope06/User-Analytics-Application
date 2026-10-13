@@ -70,6 +70,23 @@ router.get('/pages', async (req, res) => {
 });
 
 /**
+ * @route   GET /api/events/funnel
+ * @desc    Fetch conversion funnel metrics and step drop-offs
+ */
+router.get('/funnel', async (req, res) => {
+  try {
+    const funnel = await eventService.getFunnelMetrics();
+    return res.json({
+      success: true,
+      funnel
+    });
+  } catch (error) {
+    console.error('Error calculating funnel metrics:', error.message);
+    return res.status(500).json({ error: 'Failed to calculate conversion funnel' });
+  }
+});
+
+/**
  * @route   POST /api/events/seed
  * @desc    Seed realistic demo analytics data
  */
