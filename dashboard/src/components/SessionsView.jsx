@@ -199,7 +199,7 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
           </select>
 
           {/* Search Input */}
-          <div style={{ position: 'relative', minWidth: '240px' }}>
+          <div style={{ position: 'relative', minWidth: '200px', flex: '1 1 200px', maxWidth: '320px' }}>
             <Search size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input 
               type="text"

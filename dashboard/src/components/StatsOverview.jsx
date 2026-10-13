@@ -15,28 +15,28 @@ export default function StatsOverview({ sessions = [], pages = [] }) {
     {
       title: 'Active Sessions',
       value: totalSessions.toLocaleString(),
-      change: '+100% realtime',
-      subtext: `${avgEventsPerSession} avg events / session`,
+      change: 'Live Traffic',
+      subtext: `${avgEventsPerSession} events/session`,
       icon: Users,
       color: '#6366f1',
       glow: 'rgba(99, 102, 241, 0.25)',
       badgeClass: 'badge-indigo'
     },
     {
-      title: 'Total Ingested Events',
+      title: 'Ingested Events',
       value: totalEvents.toLocaleString(),
-      change: `${totalPageViews} page views`,
-      subtext: 'Continuous stream buffer',
+      change: `${totalPageViews} Views`,
+      subtext: 'Real-time stream',
       icon: Activity,
       color: '#06b6d4',
       glow: 'rgba(6, 182, 212, 0.25)',
       badgeClass: 'badge-cyan'
     },
     {
-      title: 'Total Interaction Clicks',
+      title: 'Interaction Clicks',
       value: totalClicks.toLocaleString(),
-      change: `${clickRatio}% click share`,
-      subtext: 'High engagement index',
+      change: `${clickRatio}% CTR`,
+      subtext: 'High engagement',
       icon: MousePointerClick,
       color: '#10b981',
       glow: 'rgba(16, 185, 129, 0.25)',
@@ -45,8 +45,8 @@ export default function StatsOverview({ sessions = [], pages = [] }) {
     {
       title: 'Tracked URLs',
       value: uniquePages.toLocaleString(),
-      change: 'Multi-route tracking',
-      subtext: 'Dynamic route detection',
+      change: `${uniquePages} Routes`,
+      subtext: 'Catalog & Pricing',
       icon: Globe,
       color: '#8b5cf6',
       glow: 'rgba(139, 92, 246, 0.25)',
@@ -93,7 +93,7 @@ export default function StatsOverview({ sessions = [], pages = [] }) {
             {/* Header with Title and Icon */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
               <div>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {card.title}
                 </span>
                 <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.03em', lineHeight: 1.15, marginTop: '0.2rem' }}>
@@ -117,12 +117,21 @@ export default function StatsOverview({ sessions = [], pages = [] }) {
             </div>
 
             {/* Bottom Row with Badge and Context Subtext */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.65rem', borderTop: '1px solid var(--border-subtle)' }}>
-              <span className={`badge-pill ${card.badgeClass}`}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.5rem',
+              marginTop: '0.5rem',
+              paddingTop: '0.65rem',
+              borderTop: '1px solid var(--border-subtle)',
+              whiteSpace: 'nowrap'
+            }}>
+              <span className={`badge-pill ${card.badgeClass}`} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <TrendingUp size={11} />
                 <span>{card.change}</span>
               </span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {card.subtext}
               </span>
             </div>

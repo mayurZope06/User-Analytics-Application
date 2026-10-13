@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  CheckCircle2, 
-  ArrowRight, 
-  RefreshCw, 
-  Zap, 
-  Compass, 
-  ShoppingCart, 
-  CreditCard, 
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle2,
+  ArrowRight,
+  RefreshCw,
+  Zap,
+  Compass,
+  ShoppingCart,
+  CreditCard,
   Award,
   Sparkles,
   Info
@@ -100,7 +100,7 @@ export default function FunnelView({ onSimulateTraffic }) {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button 
+          <button
             className="btn-ui btn-ui-secondary"
             onClick={fetchFunnel}
             disabled={loading}
@@ -110,7 +110,7 @@ export default function FunnelView({ onSimulateTraffic }) {
             <span>Recalculate Funnel</span>
           </button>
           {onSimulateTraffic && (
-            <button 
+            <button
               className="btn-ui btn-ui-success"
               onClick={async () => {
                 await onSimulateTraffic();
@@ -208,7 +208,7 @@ export default function FunnelView({ onSimulateTraffic }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {funnelData.stages.map((stage, idx) => {
                 const isLast = idx === funnelData.stages.length - 1;
-                const widthPercent = funnelData.totalEntrants > 0 
+                const widthPercent = funnelData.totalEntrants > 0
                   ? Math.max(18, Math.round((stage.count / funnelData.totalEntrants) * 100))
                   : 100;
 
@@ -326,7 +326,7 @@ export default function FunnelView({ onSimulateTraffic }) {
                 CausalFunnel Heuristic Recommendations
               </h3>
             </div>
-            
+
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -339,7 +339,7 @@ export default function FunnelView({ onSimulateTraffic }) {
                 padding: '1rem'
               }}>
                 <div style={{ fontWeight: 600, fontSize: '0.86rem', color: '#38bdf8', marginBottom: '0.35rem' }}>
-                  🎯 Pricing Page Optimization
+                  Pricing Page Optimization
                 </div>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   Users who reach the pricing tier comparison convert at a high intent rate. Adding floating pricing CTAs on the product catalog can accelerate transition into Stage 3.
@@ -353,7 +353,7 @@ export default function FunnelView({ onSimulateTraffic }) {
                 padding: '1rem'
               }}>
                 <div style={{ fontWeight: 600, fontSize: '0.86rem', color: '#a855f7', marginBottom: '0.35rem' }}>
-                  ⚡ Frustration & Rage Click Prevention
+                  Frustration & Rage Click Prevention
                 </div>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   Session analysis flags multiple rapid clicks on product showcase buttons. Providing instant loading feedback or visual button ripples eliminates user confusion.
@@ -367,7 +367,7 @@ export default function FunnelView({ onSimulateTraffic }) {
                 padding: '1rem'
               }}>
                 <div style={{ fontWeight: 600, fontSize: '0.86rem', color: '#34d399', marginBottom: '0.35rem' }}>
-                  🚀 Real-Time Testbench Validation
+                  Real-Time Testbench Validation
                 </div>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                   Use the Live Testbench tab or Simulate button to test multi-step user conversions across different desktop and mobile viewports.
