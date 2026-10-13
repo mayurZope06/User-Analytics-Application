@@ -1,6 +1,6 @@
-# CausalFunnel - User Analytics Application
+# CausalFunnel - Full-Stack User Analytics Application
 
-A full-stack user interaction tracking and analytics application built for the **Full Stack Engineer** hiring assessment.
+A full-stack engineered user analytics platform that tracks user interactions and visualizes session journeys and click heatmaps through a modern, responsive dashboard.
 
 This application captures client user interactions (`page_view`, `click` events with exact coordinates) using a lightweight, dependency-free JavaScript tracking snippet, ingests and aggregates them in a Node.js/MongoDB backend, and visualizes them on a modern, responsive React analytics dashboard featuring **Chronological User Journeys** and interactive **Click Heatmaps** (Canvas Gradient, Pulsar Dots with Element Inspector, and Grid Density Matrix).
 
