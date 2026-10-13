@@ -26,6 +26,7 @@ This application captures client user interactions (`page_view`, `click` events 
 - **Backend Server:** Node.js, Express.js 4.21.
 - **Database Layer:** MongoDB with Mongoose 8.9 (featuring automated, zero-latency in-memory fallback for immediate zero-config local evaluation if MongoDB is not running).
 - **Frontend Dashboard:** React 18, Vite 5, Lucide React icons, Vanilla CSS Design System with dark mode glassmorphism, responsive across mobile (320px–430px), tablet (431px–1024px), and desktop (1025px+).
+- **Advanced Behavioral Intelligence:** E-Commerce Conversion Funnel Waterfall, Interactive Virtual Session Replay Player with cursor simulation & speed toggles, and Rage Click Frustration Heuristics.
 - **Containerization:** Docker & Docker Compose (`docker-compose.yml`).
 
 ---
@@ -55,6 +56,8 @@ This application captures client user interactions (`page_view`, `click` events 
 │                                                                                                        │
 │  - Middleware: CORS (*), express.json(), express.text() (auto-parses Beacon text/plain)                │
 │  - Event Service: Strict validation (rejects malformed payloads & non-numeric click coordinates)       │
+│  - Behavioral Intelligence: Rage Click Heuristic Detection (>=3 rapid clicks within 1500ms)            │
+│  - Conversion Engine: 4-Stage E-Commerce Funnel Metrics (Discovery -> Engagement -> Pricing -> Trial) │
 │  - Aggregation Engine: Session grouping, event counting, duration calculation, and chronological sort  │
 │                                                                                                        │
 │  ┌─────────────────────────────────────────────────┐   ┌──────────────────────────────────────────┐  │
@@ -66,14 +69,16 @@ This application captures client user interactions (`page_view`, `click` events 
 └─────────────────────────────────────────────────────┬──────────────────────────────────────────────────┘
                                                       │
                          GET /api/sessions            │  GET /api/events/clicks?url=...
-                         GET /api/sessions/:sessionId │  GET /api/health
+                         GET /api/sessions/:sessionId │  GET /api/events/funnel
                                                       ▼
 ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                    React Analytics Dashboard (Vite)                                    │
 │                                                                                                        │
 │  - KPI Overview: Active Sessions, Total Ingested Events, Total Clicks, Tracked URLs                    │
-│  - Sessions Directory: Data table (desktop) & Mobile Card list (mobile <= 768px), search, sort, filters│
+│  - Sessions Directory: Data table (desktop) & Mobile Cards (mobile), Rage Click & Intent Tier filters  │
+│  - Conversion Funnel Tab: 4-Stage Waterfall, step-by-step drop-offs, bottleneck alerts & CRO insights  │
 │  - User Journey Modal: Chronological interactive timeline, route breadcrumbs, element inspector, JSON  │
+│  - Visual Session Replay: Virtual browser player, animated cursor, click ripples, 0.5x-4x speed scrubber│
 │  - Visual Click Heatmap: HTML5 Canvas radial gradient, pulsar scatter dots with tooltips, grid density│
 │  - Live Testbench: Split-screen embedded demo store with Desktop / Tablet / Mobile preview framing     │
 │  - Storage Indicator: Live status pill distinguishing persistent MongoDB from in-memory fallback       │
@@ -413,11 +418,11 @@ window.CausalTracker.flush();
 ## 🧪 Automated & End-to-End Testing
 
 ### 1. Run Automated Backend Tests
-Run the 10-point backend verification suite:
+Run the 11-point backend verification suite:
 ```bash
 node server/test/api.test.js
 ```
-**Test Coverage (All 10 behaviors verified):**
+**Test Coverage (All 11 behaviors verified):**
 1. Valid page-view ingestion (201 Created).
 2. Valid click ingestion with coordinates (201 Created).
 3. Invalid event rejection: empty payload, missing session ID, invalid type, non-numeric click coordinates (400 Bad Request).
@@ -428,6 +433,7 @@ node server/test/api.test.js
 8. Empty session ID handling (returns empty array, 200 OK).
 9. Diagnostic health check and `navigator.sendBeacon` `text/plain` parsing.
 10. In-memory fallback and seed data deduplication.
+11. E-Commerce Conversion Funnel analytics & Rage Click heuristics (`GET /api/events/funnel`).
 
 ---
 
