@@ -51,7 +51,7 @@ async function runTests() {
       baseUrl = `http://127.0.0.1:${port}`;
       console.log(`📡 Ephemeral test server listening on ${baseUrl}\n`);
       resolve();
-    });
+    }); 
   });
 
   let passed = 0;
