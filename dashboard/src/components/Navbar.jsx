@@ -56,8 +56,8 @@ export default function Navbar({
         gap: '0.75rem'
       }}>
         {/* Brand & Connection / Storage Diagnostic Badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '220px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0 }}>
             <div style={{
               width: '38px',
               height: '38px',
@@ -72,7 +72,7 @@ export default function Navbar({
             }}>
               <Activity size={20} color="#ffffff" />
             </div>
-            <div>
+            <div style={{ flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                 <span style={{ fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em', color: '#ffffff' }}>
                   Causal<span style={{ background: 'linear-gradient(135deg, #38bdf8, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Funnel</span>
@@ -81,7 +81,7 @@ export default function Navbar({
                   PRO
                 </span>
               </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+              <div className="brand-subtitle" style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 500, whiteSpace: 'nowrap' }}>
                 Behavioral Analytics & Heatmaps
               </div>
             </div>
@@ -89,28 +89,31 @@ export default function Navbar({
 
           {/* Storage Mode Badge (MongoDB vs In-Memory Fallback) */}
           <div 
-            className="hide-on-mobile"
+            className="storage-pill hide-on-mobile"
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
-              padding: '0.25rem 0.65rem',
-              background: isMongo ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-              border: `1px solid ${isMongo ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+              padding: '0.28rem 0.75rem',
+              background: isMongo ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+              border: `1px solid ${isMongo ? 'rgba(16, 185, 129, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`,
               borderRadius: '9999px',
-              fontSize: '0.72rem',
+              fontSize: '0.73rem',
               fontWeight: 600,
-              color: isMongo ? '#6ee7b7' : '#fcd34d'
+              color: isMongo ? '#6ee7b7' : '#fcd34d',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              lineHeight: 1
             }}
             title={isMongo ? 'Persistent MongoDB storage active' : 'Running in resilient in-memory storage fallback mode'}
           >
-            <div className="pulse-beacon" style={{ backgroundColor: isMongo ? '#10b981' : '#f59e0b' }} />
-            <span>{isMongo ? 'MongoDB Active' : 'In-Memory Mode'}</span>
+            <div className="pulse-beacon" style={{ backgroundColor: isMongo ? '#10b981' : '#f59e0b', flexShrink: 0 }} />
+            <span style={{ whiteSpace: 'nowrap' }}>{isMongo ? 'MongoDB Active' : 'In-Memory Mode'}</span>
           </div>
         </div>
 
         {/* Primary Navigation Tabs */}
-        <div className="tabs-nav hide-on-mobile">
+        <div className="tabs-nav hide-on-mobile" style={{ flexShrink: 0 }}>
           <button 
             className={`tab-btn ${activeTab === 'sessions' ? 'active' : ''}`}
             onClick={() => setActiveTab('sessions')}
@@ -123,7 +126,8 @@ export default function Navbar({
             onClick={() => setActiveTab('funnel')}
           >
             <TrendingUp size={14} />
-            <span>Conversion Funnel</span>
+            <span className="tab-label-full">Conversion Funnel</span>
+            <span className="tab-label-short">Funnel</span>
           </button>
           <button 
             className={`tab-btn ${activeTab === 'heatmap' ? 'active' : ''}`}
@@ -137,21 +141,22 @@ export default function Navbar({
             onClick={() => setActiveTab('demo')}
           >
             <PlayCircle size={14} />
-            <span>Live Testbench</span>
+            <span className="tab-label-full">Live Testbench</span>
+            <span className="tab-label-short">Testbench</span>
           </button>
         </div>
 
         {/* Desktop Quick Actions */}
-        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0 }}>
           {/* Live Traffic Simulator */}
           <button 
             className="btn-ui btn-ui-success"
             onClick={onSimulateTraffic}
             title="Simulate a live user session browsing products and clicking CTAs"
-            style={{ fontSize: '0.78rem', padding: '0.45rem 0.8rem' }}
+            style={{ fontSize: '0.78rem', padding: '0.42rem 0.75rem', flexShrink: 0, whiteSpace: 'nowrap' }}
           >
             <Zap size={13} />
-            <span>Simulate</span>
+            <span className="btn-label-responsive">Simulate</span>
           </button>
 
           {/* Export CSV */}
@@ -159,10 +164,10 @@ export default function Navbar({
             className="btn-ui btn-ui-secondary"
             onClick={onExportCSV}
             title="Export session analytics as CSV"
-            style={{ fontSize: '0.78rem', padding: '0.45rem 0.7rem' }}
+            style={{ fontSize: '0.78rem', padding: '0.42rem 0.65rem', flexShrink: 0, whiteSpace: 'nowrap' }}
           >
             <Download size={13} />
-            <span>Export</span>
+            <span className="btn-label-responsive">Export</span>
           </button>
 
           {/* Auto Refresh Toggle */}
@@ -171,14 +176,16 @@ export default function Navbar({
             onClick={() => setAutoRefresh(!autoRefresh)}
             style={{ 
               fontSize: '0.78rem', 
-              padding: '0.45rem 0.75rem',
+              padding: '0.42rem 0.7rem',
               borderColor: autoRefresh ? 'rgba(99, 102, 241, 0.5)' : undefined,
-              background: autoRefresh ? 'rgba(99, 102, 241, 0.1)' : undefined
+              background: autoRefresh ? 'rgba(99, 102, 241, 0.1)' : undefined,
+              flexShrink: 0,
+              whiteSpace: 'nowrap'
             }}
             title="Toggle live 4-second polling"
           >
             <Radio size={13} color={autoRefresh ? '#818cf8' : '#94a3b8'} />
-            <span>Auto: {autoRefresh ? 'ON' : 'OFF'}</span>
+            <span className="btn-label-responsive">Auto: {autoRefresh ? 'ON' : 'OFF'}</span>
           </button>
 
           {/* Manual Refresh */}
@@ -186,7 +193,7 @@ export default function Navbar({
             className="btn-ui btn-ui-secondary"
             onClick={onRefresh}
             disabled={isLoading}
-            style={{ fontSize: '0.78rem', padding: '0.45rem 0.7rem' }}
+            style={{ fontSize: '0.78rem', padding: '0.42rem 0.65rem', flexShrink: 0 }}
             title="Fetch latest data"
           >
             <RefreshCw size={13} style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
@@ -198,7 +205,7 @@ export default function Navbar({
             target="_blank" 
             rel="noreferrer"
             className="btn-ui btn-ui-primary"
-            style={{ fontSize: '0.78rem', padding: '0.45rem 0.85rem', textDecoration: 'none' }}
+            style={{ fontSize: '0.78rem', padding: '0.42rem 0.8rem', textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' }}
           >
             <span>Demo Store</span>
             <ExternalLink size={12} />
@@ -337,7 +344,35 @@ export default function Navbar({
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        @media (max-width: 860px) {
+
+        .tab-label-short {
+          display: none;
+        }
+
+        /* Large desktop to compact laptop / tablet adjustments */
+        @media (max-width: 1280px) {
+          .brand-subtitle {
+            display: none !important;
+          }
+          .tab-label-full {
+            display: none !important;
+          }
+          .tab-label-short {
+            display: inline !important;
+          }
+          .tab-btn {
+            padding: 0.45rem 0.85rem !important;
+            font-size: 0.82rem !important;
+          }
+        }
+
+        @media (max-width: 1140px) {
+          .btn-label-responsive {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 980px) {
           .hide-on-mobile {
             display: none !important;
           }
@@ -345,7 +380,8 @@ export default function Navbar({
             display: flex !important;
           }
         }
-        @media (min-width: 861px) {
+
+        @media (min-width: 981px) {
           .show-on-mobile {
             display: none !important;
           }
