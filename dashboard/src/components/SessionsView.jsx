@@ -61,6 +61,8 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
       if (!matchesSearch) return false;
       if (filterType === 'clicks' && (session.clicks || 0) === 0) return false;
       if (filterType === 'multipage' && (session.pageCount || 1) <= 1) return false;
+      if (filterType === 'rage' && !session.hasRageClick) return false;
+      if (filterType === 'high_intent' && session.intentTier !== 'High Intent') return false;
       return true;
     })
     .sort((a, b) => {
@@ -90,35 +92,67 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
             </span>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-            Inspect full chronological user journeys, click paths, and navigation timelines.
+            Inspect full chronological user journeys, click paths, frustration heuristics, and navigation timelines.
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Quick Filters */}
-          <div style={{ display: 'flex', background: 'rgba(15, 23, 42, 0.7)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', background: 'rgba(15, 23, 42, 0.7)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', flexWrap: 'wrap', gap: '2px' }}>
             <button 
               onClick={() => setFilterType('all')}
               style={{
                 background: filterType === 'all' ? 'rgba(99, 102, 241, 0.25)' : 'transparent',
                 color: filterType === 'all' ? '#a5b4fc' : 'var(--text-muted)',
                 border: 'none',
-                padding: '0.35rem 0.75rem',
+                padding: '0.35rem 0.65rem',
                 borderRadius: '6px',
                 fontSize: '0.78rem',
                 cursor: 'pointer',
                 fontWeight: 600
               }}
             >
-              All Sessions
+              All
+            </button>
+            <button 
+              onClick={() => setFilterType('rage')}
+              style={{
+                background: filterType === 'rage' ? 'rgba(239, 68, 68, 0.25)' : 'transparent',
+                color: filterType === 'rage' ? '#fca5a5' : 'var(--text-muted)',
+                border: 'none',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+              title="Sessions with rapid frustration clicks"
+            >
+              ⚠️ Rage Clicks
+            </button>
+            <button 
+              onClick={() => setFilterType('high_intent')}
+              style={{
+                background: filterType === 'high_intent' ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
+                color: filterType === 'high_intent' ? '#6ee7b7' : 'var(--text-muted)',
+                border: 'none',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+              title="Sessions that showed checkout or pricing intent"
+            >
+              ⚡ High Intent
             </button>
             <button 
               onClick={() => setFilterType('clicks')}
               style={{
-                background: filterType === 'clicks' ? 'rgba(16, 185, 129, 0.25)' : 'transparent',
-                color: filterType === 'clicks' ? '#6ee7b7' : 'var(--text-muted)',
+                background: filterType === 'clicks' ? 'rgba(56, 189, 248, 0.25)' : 'transparent',
+                color: filterType === 'clicks' ? '#7dd3fc' : 'var(--text-muted)',
                 border: 'none',
-                padding: '0.35rem 0.75rem',
+                padding: '0.35rem 0.65rem',
                 borderRadius: '6px',
                 fontSize: '0.78rem',
                 cursor: 'pointer',
@@ -130,10 +164,10 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
             <button 
               onClick={() => setFilterType('multipage')}
               style={{
-                background: filterType === 'multipage' ? 'rgba(6, 182, 212, 0.25)' : 'transparent',
-                color: filterType === 'multipage' ? '#67e8f9' : 'var(--text-muted)',
+                background: filterType === 'multipage' ? 'rgba(168, 85, 247, 0.25)' : 'transparent',
+                color: filterType === 'multipage' ? '#d8b4fe' : 'var(--text-muted)',
                 border: 'none',
-                padding: '0.35rem 0.75rem',
+                padding: '0.35rem 0.65rem',
                 borderRadius: '6px',
                 fontSize: '0.78rem',
                 cursor: 'pointer',
@@ -238,6 +272,7 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
                     letterSpacing: '0.05em'
                   }}>
                     <th style={{ padding: '0.9rem 1.25rem' }}>Session Identifier</th>
+                    <th style={{ padding: '0.9rem 1rem' }}>Behavior & Intent</th>
                     <th style={{ padding: '0.9rem 1rem' }}>Total Events</th>
                     <th style={{ padding: '0.9rem 1rem' }}>Activity Breakdown</th>
                     <th style={{ padding: '0.9rem 1rem' }}>Pages Visited</th>
@@ -303,6 +338,32 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
                               {copiedId === session.sessionId ? <Check size={13} /> : <Copy size={13} />}
                             </button>
                           </div>
+                        </div>
+                      </td>
+
+                      {/* Behavior & Intent Heuristics */}
+                      <td style={{ padding: '0.95rem 1rem' }}>
+                        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          {session.hasRageClick && (
+                            <span className="badge-pill" style={{
+                              background: 'rgba(239, 68, 68, 0.2)',
+                              color: '#f87171',
+                              border: '1px solid rgba(239, 68, 68, 0.4)',
+                              fontSize: '0.7rem'
+                            }} title="User exhibited rapid, repetitive clicks (frustration heuristic)">
+                              ⚠️ Rage Click
+                            </span>
+                          )}
+                          {session.intentTier && (
+                            <span className="badge-pill" style={{
+                              background: session.intentTier === 'High Intent' ? 'rgba(16, 185, 129, 0.2)' : session.intentTier === 'Engaged' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(148, 163, 184, 0.15)',
+                              color: session.intentTier === 'High Intent' ? '#34d399' : session.intentTier === 'Engaged' ? '#60a5fa' : '#94a3b8',
+                              border: `1px solid ${session.intentTier === 'High Intent' ? 'rgba(16, 185, 129, 0.4)' : session.intentTier === 'Engaged' ? 'rgba(59, 130, 246, 0.4)' : 'rgba(148, 163, 184, 0.3)'}`,
+                              fontSize: '0.7rem'
+                            }}>
+                              {session.intentTier === 'High Intent' ? '⚡ High Intent' : session.intentTier}
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -416,7 +477,7 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <span className="badge-pill badge-indigo">
                     {session.totalEvents} total events
                   </span>
@@ -426,6 +487,25 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
                   <span className="badge-pill badge-cyan">
                     <Eye size={11} /> {session.pageViews || 0} views
                   </span>
+                  {session.hasRageClick && (
+                    <span className="badge-pill" style={{
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      color: '#f87171',
+                      border: '1px solid rgba(239, 68, 68, 0.4)',
+                      fontSize: '0.68rem'
+                    }}>
+                      ⚠️ Rage Click
+                    </span>
+                  )}
+                  {session.intentTier && (
+                    <span className="badge-pill" style={{
+                      background: session.intentTier === 'High Intent' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                      color: session.intentTier === 'High Intent' ? '#34d399' : '#60a5fa',
+                      fontSize: '0.68rem'
+                    }}>
+                      {session.intentTier}
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.5rem' }}>
