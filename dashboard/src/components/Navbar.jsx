@@ -14,7 +14,8 @@ import {
   Radio,
   Menu,
   X,
-  Server
+  Server,
+  TrendingUp
 } from 'lucide-react';
 import { API_BASE } from '../api/config';
 
@@ -116,6 +117,13 @@ export default function Navbar({
           >
             <Layers size={14} />
             <span>Sessions</span>
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'funnel' ? 'active' : ''}`}
+            onClick={() => setActiveTab('funnel')}
+          >
+            <TrendingUp size={14} />
+            <span>Conversion Funnel</span>
           </button>
           <button 
             className={`tab-btn ${activeTab === 'heatmap' ? 'active' : ''}`}
@@ -249,29 +257,37 @@ export default function Navbar({
           </div>
 
           {/* Navigation Tabs on mobile */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.4rem' }}>
             <button 
               className={`tab-btn ${activeTab === 'sessions' ? 'active' : ''}`}
               onClick={() => { setActiveTab('sessions'); setMobileMenuOpen(false); }}
-              style={{ justifyContent: 'center', fontSize: '0.78rem', padding: '0.6rem 0.4rem' }}
+              style={{ justifyContent: 'center', fontSize: '0.72rem', padding: '0.55rem 0.3rem' }}
             >
-              <Layers size={14} />
+              <Layers size={13} />
               <span>Sessions</span>
+            </button>
+            <button 
+              className={`tab-btn ${activeTab === 'funnel' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('funnel'); setMobileMenuOpen(false); }}
+              style={{ justifyContent: 'center', fontSize: '0.72rem', padding: '0.55rem 0.3rem' }}
+            >
+              <TrendingUp size={13} />
+              <span>Funnel</span>
             </button>
             <button 
               className={`tab-btn ${activeTab === 'heatmap' ? 'active' : ''}`}
               onClick={() => { setActiveTab('heatmap'); setMobileMenuOpen(false); }}
-              style={{ justifyContent: 'center', fontSize: '0.78rem', padding: '0.6rem 0.4rem' }}
+              style={{ justifyContent: 'center', fontSize: '0.72rem', padding: '0.55rem 0.3rem' }}
             >
-              <MapPin size={14} />
+              <MapPin size={13} />
               <span>Heatmap</span>
             </button>
             <button 
               className={`tab-btn ${activeTab === 'demo' ? 'active' : ''}`}
               onClick={() => { setActiveTab('demo'); setMobileMenuOpen(false); }}
-              style={{ justifyContent: 'center', fontSize: '0.78rem', padding: '0.6rem 0.4rem' }}
+              style={{ justifyContent: 'center', fontSize: '0.72rem', padding: '0.55rem 0.3rem' }}
             >
-              <PlayCircle size={14} />
+              <PlayCircle size={13} />
               <span>Testbench</span>
             </button>
           </div>
