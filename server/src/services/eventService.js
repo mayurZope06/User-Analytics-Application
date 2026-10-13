@@ -115,12 +115,58 @@ async function recordEvents(eventsPayload, req = {}) {
 }
 
 /**
+ * Detect heuristics: Rage clicks (3+ rapid clicks in <= 1500ms) and Intent Tier
+ */
+function detectSessionHeuristics(events) {
+  let hasRageClick = false;
+  let hasAddedToCart = false;
+  let hasViewedPricing = false;
+  let hasConverted = false;
+
+  const clickEvents = events
+    .filter(e => e.eventType === 'click')
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  for (let i = 0; i < clickEvents.length - 2; i++) {
+    const t1 = new Date(clickEvents[i].timestamp).getTime();
+    const t3 = new Date(clickEvents[i + 2].timestamp).getTime();
+    if (t3 - t1 <= 1500) {
+      hasRageClick = true;
+      break;
+    }
+  }
+
+  events.forEach(e => {
+    const elId = (e.elementId || '').toLowerCase();
+    const elText = (e.elementText || '').toLowerCase();
+    const url = (e.pageUrl || '').toLowerCase();
+
+    if (url.includes('pricing')) hasViewedPricing = true;
+    if (elId.includes('cart') || elText.includes('cart') || elId.includes('explore')) hasAddedToCart = true;
+    if (elId.includes('select-pro') || elId.includes('pro') || elText.includes('trial') || elText.includes('checkout')) hasConverted = true;
+  });
+
+  let intentTier = 'Casual Explorer';
+  if (hasConverted || (hasViewedPricing && hasAddedToCart)) {
+    intentTier = 'High Intent';
+  } else if (hasAddedToCart || hasViewedPricing || clickEvents.length >= 2) {
+    intentTier = 'Engaged';
+  } else if (events.length <= 1) {
+    intentTier = 'Bounced';
+  }
+
+  return { hasRageClick, intentTier };
+}
+
+/**
  * Fetch list of all sessions with event counts and timeline stats
  */
 async function getSessionsList() {
+  let sessions = [];
+
   if (isMongoConnected()) {
     try {
-      const sessions = await Event.aggregate([
+      sessions = await Event.aggregate([
         {
           $group: {
             _id: '$sessionId',
@@ -153,50 +199,183 @@ async function getSessionsList() {
         },
         { $sort: { lastSeen: -1 } }
       ]);
-      return sessions;
     } catch (err) {
       console.error('[EventService] MongoDB aggregate error:', err.message);
+      sessions = [];
     }
   }
 
-  // Fallback memory aggregation
-  const map = new Map();
-  for (const ev of memoryEvents) {
-    const sid = ev.sessionId;
-    if (!map.has(sid)) {
-      map.set(sid, {
-        sessionId: sid,
-        totalEvents: 0,
-        pageViews: 0,
-        clicks: 0,
-        firstSeen: ev.timestamp,
-        lastSeen: ev.timestamp,
-        pages: new Set()
-      });
+  // Fallback memory aggregation if MongoDB empty or failed
+  if (sessions.length === 0 && memoryEvents.length > 0) {
+    const map = new Map();
+    for (const ev of memoryEvents) {
+      const sid = ev.sessionId;
+      if (!map.has(sid)) {
+        map.set(sid, {
+          sessionId: sid,
+          totalEvents: 0,
+          pageViews: 0,
+          clicks: 0,
+          firstSeen: ev.timestamp,
+          lastSeen: ev.timestamp,
+          pages: new Set()
+        });
+      }
+
+      const item = map.get(sid);
+      item.totalEvents++;
+      if (ev.eventType === 'page_view') item.pageViews++;
+      if (ev.eventType === 'click') item.clicks++;
+      if (new Date(ev.timestamp) < new Date(item.firstSeen)) item.firstSeen = ev.timestamp;
+      if (new Date(ev.timestamp) > new Date(item.lastSeen)) item.lastSeen = ev.timestamp;
+      item.pages.add(ev.pageUrl);
     }
 
-    const item = map.get(sid);
-    item.totalEvents++;
-    if (ev.eventType === 'page_view') item.pageViews++;
-    if (ev.eventType === 'click') item.clicks++;
-    if (new Date(ev.timestamp) < new Date(item.firstSeen)) item.firstSeen = ev.timestamp;
-    if (new Date(ev.timestamp) > new Date(item.lastSeen)) item.lastSeen = ev.timestamp;
-    item.pages.add(ev.pageUrl);
+    sessions = Array.from(map.values()).map(item => ({
+      sessionId: item.sessionId,
+      totalEvents: item.totalEvents,
+      pageViews: item.pageViews,
+      clicks: item.clicks,
+      firstSeen: item.firstSeen,
+      lastSeen: item.lastSeen,
+      pageCount: item.pages.size,
+      durationSeconds: Math.max(0, Math.round((new Date(item.lastSeen) - new Date(item.firstSeen)) / 1000))
+    }));
+    sessions.sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
   }
 
-  const result = Array.from(map.values()).map(item => ({
-    sessionId: item.sessionId,
-    totalEvents: item.totalEvents,
-    pageViews: item.pageViews,
-    clicks: item.clicks,
-    firstSeen: item.firstSeen,
-    lastSeen: item.lastSeen,
-    pageCount: item.pages.size,
-    durationSeconds: Math.max(0, Math.round((new Date(item.lastSeen) - new Date(item.firstSeen)) / 1000))
-  }));
+  // Enrich each session with heuristics (Rage click & Intent tier)
+  try {
+    const allEvents = isMongoConnected() ? await Event.find({}).lean() : memoryEvents;
+    const eventsBySession = new Map();
+    allEvents.forEach(e => {
+      if (!eventsBySession.has(e.sessionId)) eventsBySession.set(e.sessionId, []);
+      eventsBySession.get(e.sessionId).push(e);
+    });
 
-  result.sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
-  return result;
+    sessions.forEach(s => {
+      const evs = eventsBySession.get(s.sessionId) || [];
+      const heuristics = detectSessionHeuristics(evs);
+      s.hasRageClick = heuristics.hasRageClick;
+      s.intentTier = heuristics.intentTier;
+    });
+  } catch (err) {
+    sessions.forEach(s => {
+      s.hasRageClick = false;
+      s.intentTier = s.pageViews > 1 ? 'Engaged' : 'Casual Explorer';
+    });
+  }
+
+  return sessions;
+}
+
+/**
+ * Fetch Conversion Funnel analytics and stage-by-stage drop-off metrics
+ */
+async function getFunnelMetrics() {
+  const sessions = await getSessionsList();
+  const allEvents = isMongoConnected() ? await Event.find({}).lean() : memoryEvents;
+
+  const sessionEventsMap = new Map();
+  allEvents.forEach(ev => {
+    if (!sessionEventsMap.has(ev.sessionId)) {
+      sessionEventsMap.set(ev.sessionId, []);
+    }
+    sessionEventsMap.get(ev.sessionId).push(ev);
+  });
+
+  const totalSessions = sessions.length;
+  let stage1Count = 0; // Discovery
+  let stage2Count = 0; // Engagement
+  let stage3Count = 0; // Consideration (Pricing)
+  let stage4Count = 0; // Conversion (Trial / Plan CTA)
+
+  sessions.forEach(s => {
+    const evs = sessionEventsMap.get(s.sessionId) || [];
+    let s1 = false, s2 = false, s3 = false, s4 = false;
+
+    evs.forEach(e => {
+      const url = (e.pageUrl || '').toLowerCase();
+      const elId = (e.elementId || '').toLowerCase();
+      const elText = (e.elementText || '').toLowerCase();
+
+      // Stage 1: Storefront Landing
+      if (e.eventType === 'page_view' || url.includes('demo') || url.includes('index')) {
+        s1 = true;
+      }
+      // Stage 2: Product Engagement
+      if (e.eventType === 'click' && (elId.includes('btn') || elId.includes('explore') || elId.includes('cart') || elText.includes('cart') || elText.includes('pro') || elText.includes('demo'))) {
+        s2 = true;
+      }
+      // Stage 3: Pricing Page View
+      if (url.includes('pricing')) {
+        s3 = true;
+      }
+      // Stage 4: Trial CTA / Plan Selection
+      if (e.eventType === 'click' && (elId.includes('select-pro') || elId.includes('pro') || elText.includes('trial') || elText.includes('select') || elText.includes('checkout'))) {
+        s4 = true;
+      }
+    });
+
+    if (s1 || evs.length > 0) stage1Count++;
+    if ((s1 || evs.length > 0) && s2) stage2Count++;
+    if ((s1 || evs.length > 0) && s2 && s3) stage3Count++;
+    if ((s1 || evs.length > 0) && s2 && s3 && s4) stage4Count++;
+  });
+
+  const stages = [
+    {
+      id: 'discovery',
+      name: '1. Storefront Discovery',
+      description: 'Visitors exploring the storefront catalog',
+      count: stage1Count,
+      conversionRate: totalSessions > 0 ? Number(((stage1Count / totalSessions) * 100).toFixed(1)) : 100,
+      dropOffCount: Math.max(0, stage1Count - stage2Count),
+      dropOffRate: stage1Count > 0 ? Number((((stage1Count - stage2Count) / stage1Count) * 100).toFixed(1)) : 0
+    },
+    {
+      id: 'engagement',
+      name: '2. Product Engagement',
+      description: 'Visitors clicking product CTAs or adding to cart',
+      count: stage2Count,
+      conversionRate: stage1Count > 0 ? Number(((stage2Count / stage1Count) * 100).toFixed(1)) : 0,
+      dropOffCount: Math.max(0, stage2Count - stage3Count),
+      dropOffRate: stage2Count > 0 ? Number((((stage2Count - stage3Count) / stage2Count) * 100).toFixed(1)) : 0
+    },
+    {
+      id: 'consideration',
+      name: '3. Pricing Consideration',
+      description: 'Visitors comparing subscription tiers on pricing page',
+      count: stage3Count,
+      conversionRate: stage2Count > 0 ? Number(((stage3Count / stage2Count) * 100).toFixed(1)) : 0,
+      dropOffCount: Math.max(0, stage3Count - stage4Count),
+      dropOffRate: stage3Count > 0 ? Number((((stage3Count - stage4Count) / stage3Count) * 100).toFixed(1)) : 0
+    },
+    {
+      id: 'conversion',
+      name: '4. Trial / Checkout Intent',
+      description: 'Visitors who committed by clicking Start Pro Trial',
+      count: stage4Count,
+      conversionRate: stage3Count > 0 ? Number(((stage4Count / stage3Count) * 100).toFixed(1)) : 0,
+      dropOffCount: 0,
+      dropOffRate: 0
+    }
+  ];
+
+  const overallConversionRate = stage1Count > 0 ? Number(((stage4Count / stage1Count) * 100).toFixed(1)) : 0;
+  
+  let highestDropOff = stages[0];
+  stages.slice(0, 3).forEach(st => {
+    if (st.dropOffRate > highestDropOff.dropOffRate) highestDropOff = st;
+  });
+
+  return {
+    totalEntrants: stage1Count,
+    totalConverted: stage4Count,
+    overallConversionRate,
+    highestDropOffStage: highestDropOff.name,
+    stages
+  };
 }
 
 /**
@@ -405,7 +584,7 @@ async function seedSampleData() {
       timestamp: new Date(now - 1000 * 60 * 12).toISOString()
     },
 
-    // Session 3: Heatmap concentration test on index.html
+    // Session 3: Frustrated visitor with Rage Clicks on index.html
     {
       session_id: 'sess_user_gamma_312',
       event_type: 'page_view',
@@ -415,7 +594,6 @@ async function seedSampleData() {
     {
       session_id: 'sess_user_gamma_312',
       event_type: 'click',
-      page_url: demoUrl,
       x: 610,
       y: 335,
       x_pct: 50.5,
@@ -423,25 +601,38 @@ async function seedSampleData() {
       element_tag: 'button',
       element_id: 'hero-btn-explore',
       element_text: 'Explore Studio Pro',
-      timestamp: new Date(now - 1000 * 60 * 7).toISOString()
-    },
-    {
-      session_id: 'sess_user_gamma_312',
-      event_type: 'click',
       page_url: demoUrl,
-      x: 595,
-      y: 325,
-      x_pct: 49.8,
-      y_pct: 32.2,
-      element_tag: 'button',
-      element_id: 'hero-btn-explore',
-      element_text: 'Explore Studio Pro',
       timestamp: new Date(now - 1000 * 60 * 6).toISOString()
     },
     {
       session_id: 'sess_user_gamma_312',
       event_type: 'click',
+      x: 612,
+      y: 336,
+      x_pct: 50.7,
+      y_pct: 32.9,
+      element_tag: 'button',
+      element_id: 'hero-btn-explore',
+      element_text: 'Explore Studio Pro',
       page_url: demoUrl,
+      timestamp: new Date(now - 1000 * 60 * 6 + 320).toISOString()
+    },
+    {
+      session_id: 'sess_user_gamma_312',
+      event_type: 'click',
+      x: 608,
+      y: 334,
+      x_pct: 50.3,
+      y_pct: 32.7,
+      element_tag: 'button',
+      element_id: 'hero-btn-explore',
+      element_text: 'Explore Studio Pro',
+      page_url: demoUrl,
+      timestamp: new Date(now - 1000 * 60 * 6 + 680).toISOString()
+    },
+    {
+      session_id: 'sess_user_gamma_312',
+      event_type: 'click',
       x: 375,
       y: 685,
       x_pct: 31.2,
@@ -449,6 +640,7 @@ async function seedSampleData() {
       element_tag: 'button',
       element_id: 'btn-add-aura-prime',
       element_text: 'Add to Cart',
+      page_url: demoUrl,
       timestamp: new Date(now - 1000 * 60 * 4).toISOString()
     }
   ];
@@ -493,6 +685,8 @@ module.exports = {
   getSessionEvents,
   getPageClicks,
   getTrackedPages,
+  getFunnelMetrics,
+  detectSessionHeuristics,
   seedSampleData,
   clearAllEvents,
   getStorageStatus

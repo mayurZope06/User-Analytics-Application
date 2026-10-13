@@ -260,6 +260,29 @@ async function runTests() {
       assert.strictEqual(count1, count2, 'Re-seeding must not duplicate sample sessions');
     });
 
+    // 11. Conversion Funnel analytics and Rage Click detection
+    await test('11. Conversion Funnel analytics & Rage Click heuristics', async () => {
+      // Test Funnel endpoint
+      const funnelRes = await request('/api/events/funnel');
+      assert.strictEqual(funnelRes.status, 200);
+      assert.strictEqual(funnelRes.data.success, true);
+      assert.ok(Array.isArray(funnelRes.data.funnel.stages));
+      assert.strictEqual(funnelRes.data.funnel.stages.length, 4);
+      assert.ok(typeof funnelRes.data.funnel.overallConversionRate === 'number');
+      assert.ok(typeof funnelRes.data.funnel.highestDropOffStage === 'string');
+
+      // Test Session heuristics enrichment
+      const sessRes = await request('/api/sessions');
+      assert.strictEqual(sessRes.status, 200);
+      const sessions = sessRes.data.sessions;
+      assert.ok(sessions.length > 0);
+      
+      const rageSession = sessions.find(s => s.sessionId === 'sess_user_gamma_312');
+      assert.ok(rageSession, 'sess_user_gamma_312 should exist from seed data');
+      assert.strictEqual(rageSession.hasRageClick, true, 'sess_user_gamma_312 should be flagged with rage clicks');
+      assert.ok(typeof rageSession.intentTier === 'string');
+    });
+
   } finally {
     if (server) {
       server.close();
