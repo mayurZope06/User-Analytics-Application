@@ -3,8 +3,8 @@ const router = express.Router();
 const eventService = require('../services/eventService');
 
 /**
- * @route   POST /api/events
- * @desc    Receive and store single or batched events
+ * @route   POST /api/events   
+ * @desc    Receive and store single or batched events 
  */
 router.post('/', async (req, res) => {
   try {

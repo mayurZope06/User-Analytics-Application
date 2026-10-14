@@ -206,7 +206,7 @@ export default function SessionsView({ sessions = [], onSelectSession, onSeedDat
               placeholder="Search Session ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
+              style={{ 
                 width: '100%',
                 padding: '0.5rem 0.75rem 0.5rem 2.25rem',
                 background: 'rgba(15, 23, 42, 0.8)',
